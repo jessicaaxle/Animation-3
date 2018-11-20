@@ -38,6 +38,17 @@ void SkinnedGameObject::initializeSkeletonFromHTR(std::string htrFilePath, std::
 	addChild(m_pHTRAnimation->getRootGameObject());
 }
 
+void SkinnedGameObject::loadSkeletonFromHTR(std::string htrFilePath)
+{
+	// Create GameObjects from the data
+	//m_pHTRAnimation->createGameObjects();
+
+	// Add the root node from the HTR file as a child to
+	// this GameObject. This allows us to control the locomotion of the hierarchy
+	// my changing 'this' GameObject's scale, rotation and translation
+	addChild(m_pHTRAnimation->getRootGameObject());
+}
+
 glm::mat4 SkinnedGameObject::getJointToBindMatrix()
 {
 	return m_pJointToBindMat;

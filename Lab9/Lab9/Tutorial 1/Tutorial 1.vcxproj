@@ -196,6 +196,7 @@
     <ClInclude Include="..\include\TTK\OBJMesh.h" />
     <ClInclude Include="..\include\TTK\QuadMesh.h" />
     <ClInclude Include="..\include\TTK\Texture2D.h" />
+    <ClInclude Include="BlendTree.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

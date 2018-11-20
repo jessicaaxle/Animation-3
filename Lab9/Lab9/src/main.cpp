@@ -61,12 +61,30 @@ void InitializeScene()
 	std::string modelsPath = "../../assets/models/";
 
 	skinnedGameObject.animFiles = {
-		animationPath + "Idle.htr", animationPath + "Jump1.htr"
+		animationPath + "Idle.htr",
+		animationPath + "Jump.htr",
+		animationPath + "ShuffleLeft.htr",
+		animationPath + "ShuffleRight.htr",
+		animationPath + "WalkBackLeft.htr",
+		animationPath + "WalkBackRight.htr",
+		animationPath + "WalkBackward.htr",
+		animationPath + "WalkForward.htr",
+		animationPath + "WalkForwardLeft.htr",
+		animationPath + "WalkForwardRight.htr",
+		animationPath + "StrongAttack.htr",
+		animationPath + "WeakAttack.htr",
 	};
 
 	skinnedGameObject.name = "root";
 	//skinnedGameObject.initializeSkeletonFromHTR(animationPath + "simple_rig.htr", "", nullptr);
+	/*for (int i = 0; i < skinnedGameObject.animFiles.size(); i++)
+	{
+		skinnedGameObject.initializeSkeletonFromHTR(skinnedGameObject.animFiles[i], "", nullptr);
+	}*/
 	skinnedGameObject.initializeSkeletonFromHTR(skinnedGameObject.animFiles[0], "", nullptr);
+	skinnedGameObject.setLocalRotationAngleX(-90);
+
+	//skinnedGameObject.loadSkeletonFromHTR(skinnedGameObject.animFiles[0]);
 	//skinnedGameObject.initializeSkeletonFromHTR(animationPath + "Idle.htr", "", nullptr);
 	//skinnedGameObject.initializeSkeletonFromHTR(animationPath + "Jump1.htr", "", nullptr);
 }
@@ -206,6 +224,7 @@ void KeyboardCallbackFunction(unsigned char key, int x, int y)
 		break;
 	case 32:
 		skinnedGameObject.initializeSkeletonFromHTR(skinnedGameObject.animFiles[1], "", nullptr);
+		//skinnedGameObject.loadSkeletonFromHTR(skinnedGameObject.animFiles[1]);
 	}
 
 	// This is what makes the backspace button work

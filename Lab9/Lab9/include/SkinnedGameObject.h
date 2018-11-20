@@ -30,6 +30,8 @@ public:
 
 	void initializeSkeletonFromHTR(std::string htrFilePath, std::string skinWeightFilePath, std::shared_ptr<TTK::OBJMesh> bindMesh);
 
+	void loadSkeletonFromHTR(std::string htrFilePath);
+
 	glm::mat4 getJointToBindMatrix();
 
 	virtual void update(float dt);
