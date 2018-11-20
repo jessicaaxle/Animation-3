@@ -53,14 +53,19 @@ glm::vec3 mousePosition; // x, y, 0
 glm::vec3 mousePositionFlipped; // x, windowHeight - y, 0
 TTK::Camera camera;
 
-SkinnedGameObject skinnedGameObject;
+//SkinnedGameObject skinnedGameObject;
+std::string animationPath = "../../assets/animations/HTR/";
+
+SkinnedGameObject Idle;
+SkinnedGameObject WalkForward;
+bool isWalkFor;
 
 void InitializeScene()
 {
-	std::string animationPath = "../../assets/animations/HTR/";
+	//std::string animationPath = "../../assets/animations/HTR/";
 	std::string modelsPath = "../../assets/models/";
 
-	skinnedGameObject.animFiles = {
+	/*skinnedGameObject.animFiles = {
 		animationPath + "Idle.htr",
 		animationPath + "Jump.htr",
 		animationPath + "ShuffleLeft.htr",
@@ -73,16 +78,18 @@ void InitializeScene()
 		animationPath + "WalkForwardRight.htr",
 		animationPath + "StrongAttack.htr",
 		animationPath + "WeakAttack.htr",
-	};
+	};*/
 
-	skinnedGameObject.name = "root";
+	Idle.name = "root";
 	//skinnedGameObject.initializeSkeletonFromHTR(animationPath + "simple_rig.htr", "", nullptr);
 	/*for (int i = 0; i < skinnedGameObject.animFiles.size(); i++)
 	{
 		skinnedGameObject.initializeSkeletonFromHTR(skinnedGameObject.animFiles[i], "", nullptr);
 	}*/
-	skinnedGameObject.initializeSkeletonFromHTR(skinnedGameObject.animFiles[0], "", nullptr);
-	skinnedGameObject.setLocalRotationAngleX(-90);
+	Idle.initializeSkeletonFromHTR(animationPath + "Idle.htr", "", nullptr);
+	Idle.setLocalRotationAngleX(-90);
+	WalkForward.initializeSkeletonFromHTR(animationPath + "WalkForward.htr", "", nullptr);
+	WalkForward.setLocalRotationAngleX(-90);
 
 	//skinnedGameObject.loadSkeletonFromHTR(skinnedGameObject.animFiles[0]);
 	//skinnedGameObject.initializeSkeletonFromHTR(animationPath + "Idle.htr", "", nullptr);
@@ -119,9 +126,18 @@ void DisplayCallbackFunction(void)
 	camera.update();
 
 	// Update the GameObjects as necessary
-	skinnedGameObject.update(deltaTime);
+	if (!isWalkFor)
+	{
+		Idle.update(deltaTime);
 
-	skinnedGameObject.draw();
+		Idle.draw();
+	}
+	else if (isWalkFor)
+	{
+		WalkForward.update(deltaTime);
+
+		WalkForward.draw();
+	}
 
 	// Draw UI
 	// You must call this prior to using any imgui functions
@@ -130,7 +146,7 @@ void DisplayCallbackFunction(void)
 
 	drawHierarchyUI();
 
-	ImGui::Checkbox("Play Animation", &skinnedGameObject.playing);
+	//ImGui::Checkbox("Play Animation", &skinnedGameObject.playing);
 
 	// You must call this once you are done doing UI stuff
 	// This is what actually draws the ui on screen
@@ -147,8 +163,19 @@ void drawHierarchyUI()
 	ImGui::Text("Hierarchy");
 	ImGui::Separator();
 
-	Transform* selectedObject = drawHierarchyUI(&skinnedGameObject);
-	static Transform* previousSelectedObject = selectedObject;
+	Transform* selectedObject;
+	static Transform* previousSelectedObject;
+
+	if (!isWalkFor)
+	{
+		selectedObject = drawHierarchyUI(&Idle);
+		previousSelectedObject = selectedObject;
+	}
+	else if (isWalkFor)
+	{
+		selectedObject = drawHierarchyUI(&WalkForward);
+		previousSelectedObject = selectedObject;
+	}
 
 	if (selectedObject != nullptr)
 	{
@@ -222,8 +249,9 @@ void KeyboardCallbackFunction(unsigned char key, int x, int y)
 	case 'd':
 		input.cameraLeft = true;
 		break;
-	case 32:
-		skinnedGameObject.initializeSkeletonFromHTR(skinnedGameObject.animFiles[1], "", nullptr);
+	//case 32:
+		//WalkForward.initializeSkeletonFromHTR(skinnedGameObject.animFiles[1], "", nullptr);
+		//isWalkFor = true;
 		//skinnedGameObject.loadSkeletonFromHTR(skinnedGameObject.animFiles[1]);
 	}
 
@@ -279,6 +307,9 @@ void KeyboardUpCallbackFunction(unsigned char key, int x, int y)
 	case 'D':
 	case 'd':
 		input.cameraLeft = false;
+		break;
+	case 32:
+		isWalkFor = true;
 		break;
 	default:
 		break;
@@ -355,8 +386,12 @@ void MouseClickCallbackFunction(int button, int state, int x, int y)
 
 void SpecialInputCallbackFunction(int key, int x, int y)
 {
-	float movementSpeed = 5.0f; // how fast should the object move
-	glm::vec3 currentRootPosition = skinnedGameObject.getLocalPosition();
+	float movementSpeed = 2.5f; // how fast should the object move
+	glm::vec3 currentRootPosition;
+	if(!isWalkFor)
+		currentRootPosition = Idle.getLocalPosition();
+	else if (isWalkFor)
+		currentRootPosition = WalkForward.getLocalPosition();
 
 	switch (key)
 	{
@@ -374,7 +409,10 @@ void SpecialInputCallbackFunction(int key, int x, int y)
 		break;
 	}
 
-	skinnedGameObject.setLocalPosition(currentRootPosition);
+	if (!isWalkFor)
+		Idle.setLocalPosition(currentRootPosition);
+	else if (isWalkFor)
+		WalkForward.setLocalPosition(currentRootPosition);
 }
 
 // Called when the mouse is clicked and moves

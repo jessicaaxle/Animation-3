@@ -36,5 +36,5 @@ public:
 
 	virtual void update(float dt);
 
-	std::vector<std::string> animFiles;
+	//std::vector<std::string> animFiles;
 };
