@@ -6,6 +6,7 @@
 #pragma comment(lib, "FreeImage.lib")
 
 #include "SkinnedGameObject.h"
+#include "BlendTree.h"
 #include "Transform.h"
 #include "AnimationMath.h"
 #include "ParticleEmitter.h"
@@ -52,6 +53,8 @@ float deltaTime = 0.0f; // amount of time since last update (set every frame in 
 glm::vec3 mousePosition; // x, y, 0
 glm::vec3 mousePositionFlipped; // x, windowHeight - y, 0
 TTK::Camera camera;
+
+BlendTree blend;
 
 //SkinnedGameObject skinnedGameObject;
 std::string animationPath = "../../assets/animations/HTR/";
@@ -249,9 +252,14 @@ void KeyboardCallbackFunction(unsigned char key, int x, int y)
 	case 'd':
 		input.cameraLeft = true;
 		break;
-	//case 32:
+	case 32:
 		//WalkForward.initializeSkeletonFromHTR(skinnedGameObject.animFiles[1], "", nullptr);
-		//isWalkFor = true;
+		glm::quat IdleQuat = blend.RotationToQuaternion(Idle.getWorldRotation());
+		glm::quat WalkForQaut = blend.RotationToQuaternion(WalkForward.getWorldRotation());
+		glm::quat SlerpQuat = blend.Slerp(IdleQuat, WalkForQaut, 0.5);
+		//WalkForward.m_pLocalRotation = blend.QuaternionToRotation(SlerpQuat);
+		isWalkFor = true;
+
 		//skinnedGameObject.loadSkeletonFromHTR(skinnedGameObject.animFiles[1]);
 	}
 
@@ -309,7 +317,6 @@ void KeyboardUpCallbackFunction(unsigned char key, int x, int y)
 		input.cameraLeft = false;
 		break;
 	case 32:
-		isWalkFor = true;
 		break;
 	default:
 		break;
@@ -393,19 +400,58 @@ void SpecialInputCallbackFunction(int key, int x, int y)
 	else if (isWalkFor)
 		currentRootPosition = WalkForward.getLocalPosition();
 
+	ImGuiIO& io = ImGui::GetIO();
+	io.KeysDown[key] = true;
+
 	switch (key)
 	{
 	case GLUT_KEY_UP:
-		currentRootPosition.z += movementSpeed * deltaTime;
+		isWalkFor = true;
+		currentRootPosition.x -= movementSpeed * deltaTime;
 		break;
 	case GLUT_KEY_DOWN:
-		currentRootPosition.z -= movementSpeed * deltaTime;
-		break;
-	case GLUT_KEY_LEFT:
 		currentRootPosition.x += movementSpeed * deltaTime;
 		break;
+	case GLUT_KEY_LEFT:
+		currentRootPosition.z -= movementSpeed * deltaTime;
+		break;
 	case GLUT_KEY_RIGHT:
+		currentRootPosition.z += movementSpeed * deltaTime;
+		break;
+	}
+
+	if (!isWalkFor)
+		Idle.setLocalPosition(currentRootPosition);
+	else if (isWalkFor)
+		WalkForward.setLocalPosition(currentRootPosition);
+}
+
+void SpecialInputUpCallbackFunction(int key, int x, int y)
+{
+	float movementSpeed = 2.5f; // how fast should the object move
+	glm::vec3 currentRootPosition;
+	if (!isWalkFor)
+		currentRootPosition = Idle.getLocalPosition();
+	else if (isWalkFor)
+		currentRootPosition = WalkForward.getLocalPosition();
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.KeysDown[key] = false;
+	std::cout << "hi";
+	switch (key)
+	{
+	case GLUT_KEY_UP:
+		isWalkFor = false;
 		currentRootPosition.x -= movementSpeed * deltaTime;
+		break;
+	case GLUT_KEY_DOWN:
+		currentRootPosition.x += movementSpeed * deltaTime;
+		break;
+	case GLUT_KEY_LEFT:
+		currentRootPosition.z -= movementSpeed * deltaTime;
+		break;
+	case GLUT_KEY_RIGHT:
+		currentRootPosition.z += movementSpeed * deltaTime;
 		break;
 	}
 
@@ -476,6 +522,7 @@ int main(int argc, char **argv)
 	glutPassiveMotionFunc(MousePassiveMotionCallbackFunction);
 	glutTimerFunc(1, TimerCallbackFunction, 0);
 	glutSpecialFunc(SpecialInputCallbackFunction);
+	glutSpecialUpFunc(SpecialInputUpCallbackFunction);
 
 	// Init GL
 	glEnable(GL_DEPTH_TEST);

@@ -19,7 +19,7 @@ protected:
 	glm::vec3 m_pLocalRotationAngles; // local rotation angles (degrees)
 
 	glm::vec3 m_pLocalPosition;
-	glm::mat4 m_pLocalRotation;
+	//glm::mat4 m_pLocalRotation;
 	glm::mat4 m_pLocalTransformMatrix;
 	glm::mat4 m_pLocalToWorldMatrix; // parentLocalToWorld * m_pLocalTransformation 
 
@@ -74,5 +74,7 @@ public:
 	// Other Properties
 	std::string name;
 	glm::vec4 colour; 
+
+	glm::mat4 m_pLocalRotation;
 	// Material* ...
 };

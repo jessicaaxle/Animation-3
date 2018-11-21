@@ -59,6 +59,37 @@ public:
 		quat.y = (rm[0][2] - rm[2][0]) / (4 * quat.w);
 		quat.z = (rm[1][0] - rm[0][1]) / (4 * quat.w);
 
+		glm::normalize(quat);
+
 		return quat;
+	}
+
+	glm::mat4 QuaternionToRotation(glm::quat quat)
+	{
+		glm::mat4 rm;
+
+		rm[0][0] = 1 - (2 * (quat.y * quat.y)) - (2 * (quat.z * quat.z));
+		rm[0][1] = (2 * quat.x * quat.y) - (2 * quat.z * quat.w);
+		rm[0][2] = (2 * quat.x * quat.y) + (2 * quat.y * quat.w);
+		rm[0][3] = 0;
+
+		rm[1][0] = (2 * quat.x * quat.y) + (2 * quat.z * quat.w);
+		rm[1][1] = 1 - (2 * (quat.x * quat.x)) - (2 * (quat.z * quat.z));
+		rm[1][2] = (2 * quat.y * quat.z) - (2 * quat.z * quat.w);
+		rm[1][3] = 0;
+
+		rm[2][0] = (2 * quat.z * quat.y) - (2 * quat.y * quat.w);
+		rm[2][1] = (2 * quat.y * quat.z) + (2 * quat.x * quat.w);
+		rm[2][2] = 1 - (2 * (quat.x * quat.x)) - (2 * (quat.y * quat.y));
+		rm[2][3] = 0;
+
+		rm[3][0] = 0;
+		rm[3][1] = 0;
+		rm[3][2] = 0;
+		rm[3][3] = 1;
+
+		//glm::normalize(rm);
+
+		return rm;
 	}
 };
