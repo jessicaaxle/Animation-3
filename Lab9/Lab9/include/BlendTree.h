@@ -1,5 +1,6 @@
 #pragma once
 #include "SkinnedGameObject.h"
+#include <iostream>
 
 class BlendTree
 {
@@ -47,6 +48,7 @@ public:
 		quat.y = (q1.y * ratio1 + q2.y * ratio2);
 		quat.z = (q1.z * ratio1 + q2.z * ratio2);
 
+		//std::cout << "SLERP" << std::endl;
 		return quat;
 	}
 
@@ -60,6 +62,8 @@ public:
 		quat.z = (rm[1][0] - rm[0][1]) / (4 * quat.w);
 
 		glm::normalize(quat);
+
+		//std::cout << "RotToQuat" << std::endl;
 
 		return quat;
 	}
@@ -88,6 +92,7 @@ public:
 		rm[3][2] = 0;
 		rm[3][3] = 1;
 
+		//std::cout << "QuatToRot" << std::endl;
 		//glm::normalize(rm);
 
 		return rm;

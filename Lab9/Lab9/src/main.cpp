@@ -55,13 +55,36 @@ glm::vec3 mousePositionFlipped; // x, windowHeight - y, 0
 TTK::Camera camera;
 
 BlendTree blend;
-
+float interpVal = 0.0f;
 //SkinnedGameObject skinnedGameObject;
 std::string animationPath = "../../assets/animations/HTR/";
 
+SkinnedGameObject interpSkeleton;
+SkinnedGameObject PrevAnim;
 SkinnedGameObject Idle;
 SkinnedGameObject WalkForward;
+SkinnedGameObject WalkForLeft;
+SkinnedGameObject WalkForRight;
+SkinnedGameObject WalkBackward;
+SkinnedGameObject WalkBackLeft;
+SkinnedGameObject WalkBackRight;
+SkinnedGameObject ShuffleLeft;
+SkinnedGameObject ShuffleRight;
+SkinnedGameObject Jump;
+SkinnedGameObject Strong;
+SkinnedGameObject Weak;
 bool isWalkFor;
+bool isWalkForLeft;
+bool isWalkForRight;
+bool isWalkBack;
+bool isWalkBackLeft;
+bool isWalkBackRight;
+bool isShuffleLeft;
+bool isShuffleRight;
+bool isJump;
+bool isStrong;
+bool isWeak;
+bool loopPlayed = false;
 
 void InitializeScene()
 {
@@ -91,8 +114,42 @@ void InitializeScene()
 	}*/
 	Idle.initializeSkeletonFromHTR(animationPath + "Idle.htr", "", nullptr);
 	Idle.setLocalRotationAngleX(-90);
+
+	WalkForward.name = "walk";
 	WalkForward.initializeSkeletonFromHTR(animationPath + "WalkForward.htr", "", nullptr);
 	WalkForward.setLocalRotationAngleX(-90);
+
+	WalkForLeft.initializeSkeletonFromHTR(animationPath + "WalkForwardLeft.htr", "", nullptr);
+	WalkForLeft.setLocalRotationAngleX(-90);
+
+	WalkForRight.initializeSkeletonFromHTR(animationPath + "WalkForwardRight.htr", "", nullptr);
+	WalkForRight.setLocalRotationAngleX(-90);
+
+	WalkBackward.initializeSkeletonFromHTR(animationPath + "WalkBackward.htr", "", nullptr);
+	WalkBackward.setLocalRotationAngleX(-90);
+
+	WalkBackLeft.initializeSkeletonFromHTR(animationPath + "WalkBackLeft.htr", "", nullptr);
+	WalkBackLeft.setLocalRotationAngleX(-90);
+
+	WalkBackRight.initializeSkeletonFromHTR(animationPath + "WalkBackRight.htr", "", nullptr);
+	WalkBackRight.setLocalRotationAngleX(-90);
+
+	ShuffleLeft.initializeSkeletonFromHTR(animationPath + "ShuffleLeft.htr", "", nullptr);
+	ShuffleLeft.setLocalRotationAngleX(-90);
+
+	ShuffleRight.initializeSkeletonFromHTR(animationPath + "ShuffleRight.htr", "", nullptr);
+	ShuffleRight.setLocalRotationAngleX(-90);
+
+	Jump.initializeSkeletonFromHTR(animationPath + "Jump.htr", "", nullptr);
+	Jump.setLocalRotationAngleX(-90);
+
+	Strong.initializeSkeletonFromHTR(animationPath + "StrongAttack.htr", "", nullptr);
+	Strong.setLocalRotationAngleX(-90);
+
+	Weak.initializeSkeletonFromHTR(animationPath + "WeakAttack.htr", "", nullptr);
+	Weak.setLocalRotationAngleX(-90);
+
+	PrevAnim = Idle;
 
 	//skinnedGameObject.loadSkeletonFromHTR(skinnedGameObject.animFiles[0]);
 	//skinnedGameObject.initializeSkeletonFromHTR(animationPath + "Idle.htr", "", nullptr);
@@ -117,6 +174,11 @@ void ProcessInput()
 		camera.moveLeft();
 }
 
+void Interpolation()
+{
+	
+}
+
 // This is where we draw stuff
 void DisplayCallbackFunction(void)
 {
@@ -129,17 +191,89 @@ void DisplayCallbackFunction(void)
 	camera.update();
 
 	// Update the GameObjects as necessary
-	if (!isWalkFor)
+	if (isWalkFor)
+	{
+		for (float i = 0.5f; i >= interpVal; i -= 0.1f)
+		{
+			std::cout << i << std::endl;
+			glm::quat IdleQuat = blend.RotationToQuaternion(Idle.getWorldRotation());
+			glm::quat WalkForQaut = blend.RotationToQuaternion(WalkForward.getWorldRotation());
+			glm::quat SlerpQuat = blend.Slerp(IdleQuat, WalkForQaut, i);
+			interpSkeleton = Idle;
+			interpSkeleton.m_pLocalRotation = blend.QuaternionToRotation(SlerpQuat);
+			//interpSkeleton.update(deltaTime);
+			//interpSkeleton.draw();
+		}
+
+		WalkForward.update(deltaTime);
+
+		WalkForward.draw();
+	}
+	else if (isWalkForLeft)
+	{
+		WalkForLeft.update(deltaTime);
+
+		WalkForLeft.draw();
+	}
+	else if (isWalkForRight)
+	{
+		WalkForRight.update(deltaTime);
+
+		WalkForRight.draw();
+	}
+	else if (isWalkBack)
+	{
+		WalkBackward.update(deltaTime);
+
+		WalkBackward.draw();
+	}
+	else if (isWalkBackLeft)
+	{
+		WalkBackLeft.update(deltaTime);
+
+		WalkBackLeft.draw();
+	}
+	else if (isWalkBackRight)
+	{
+		WalkBackRight.update(deltaTime);
+
+		WalkBackRight.draw();
+	}
+	else if (isShuffleLeft)
+	{
+		ShuffleLeft.update(deltaTime);
+
+		ShuffleLeft.draw();
+	}
+	else if (isShuffleRight)
+	{
+		ShuffleRight.update(deltaTime);
+
+		ShuffleRight.draw();
+	}
+	else if (isJump)
+	{
+		Jump.update(deltaTime);
+
+		Jump.draw();
+	}
+	else if (isStrong)
+	{
+		Strong.update(deltaTime);
+
+		Strong.draw();
+	}
+	else if (isWeak)
+	{
+		Weak.update(deltaTime);
+
+		Weak.draw();
+	}
+	else
 	{
 		Idle.update(deltaTime);
 
 		Idle.draw();
-	}
-	else if (isWalkFor)
-	{
-		WalkForward.update(deltaTime);
-
-		WalkForward.draw();
 	}
 
 	// Draw UI
@@ -169,14 +303,19 @@ void drawHierarchyUI()
 	Transform* selectedObject;
 	static Transform* previousSelectedObject;
 
-	if (!isWalkFor)
-	{
-		selectedObject = drawHierarchyUI(&Idle);
-		previousSelectedObject = selectedObject;
-	}
-	else if (isWalkFor)
+	if (isWalkFor)
 	{
 		selectedObject = drawHierarchyUI(&WalkForward);
+		previousSelectedObject = selectedObject;
+	}
+	/*else if (isWalkFor)
+	{
+		selectedObject = drawHierarchyUI(&WalkForward);
+		previousSelectedObject = selectedObject;
+	}*/
+	else
+	{
+		selectedObject = drawHierarchyUI(&Idle);
 		previousSelectedObject = selectedObject;
 	}
 
@@ -254,11 +393,8 @@ void KeyboardCallbackFunction(unsigned char key, int x, int y)
 		break;
 	case 32:
 		//WalkForward.initializeSkeletonFromHTR(skinnedGameObject.animFiles[1], "", nullptr);
-		glm::quat IdleQuat = blend.RotationToQuaternion(Idle.getWorldRotation());
-		glm::quat WalkForQaut = blend.RotationToQuaternion(WalkForward.getWorldRotation());
-		glm::quat SlerpQuat = blend.Slerp(IdleQuat, WalkForQaut, 0.5);
-		//WalkForward.m_pLocalRotation = blend.QuaternionToRotation(SlerpQuat);
-		isWalkFor = true;
+		isJump = true;
+		break;
 
 		//skinnedGameObject.loadSkeletonFromHTR(skinnedGameObject.animFiles[1]);
 	}
@@ -317,6 +453,7 @@ void KeyboardUpCallbackFunction(unsigned char key, int x, int y)
 		input.cameraLeft = false;
 		break;
 	case 32:
+		isJump = false;
 		break;
 	default:
 		break;
@@ -394,11 +531,31 @@ void MouseClickCallbackFunction(int button, int state, int x, int y)
 void SpecialInputCallbackFunction(int key, int x, int y)
 {
 	float movementSpeed = 2.5f; // how fast should the object move
-	glm::vec3 currentRootPosition;
-	if(!isWalkFor)
-		currentRootPosition = Idle.getLocalPosition();
-	else if (isWalkFor)
+	glm::vec3 currentRootPosition;// = PrevAnim.getLocalPosition();
+	if(isWalkFor)
 		currentRootPosition = WalkForward.getLocalPosition();
+	else if (isWalkForLeft)
+		currentRootPosition = WalkForLeft.getLocalPosition();
+	else if (isWalkForRight)
+		currentRootPosition = WalkForRight.getLocalPosition();
+	else if (isWalkBack)
+		currentRootPosition = WalkBackward.getLocalPosition();
+	else if (isWalkBackLeft)
+		currentRootPosition = WalkBackLeft.getLocalPosition();
+	else if (isWalkBackRight)
+		currentRootPosition = WalkBackRight.getLocalPosition();
+	else if (isShuffleLeft)
+		currentRootPosition = ShuffleLeft.getLocalPosition();
+	else if (isShuffleRight)
+		currentRootPosition = ShuffleRight.getLocalPosition();
+	/*else if (isJump)
+		currentRootPosition = Jump.getLocalPosition();
+	else if (isStrong)
+		currentRootPosition = Strong.getLocalPosition();
+	else if (isWeak)
+		currentRootPosition = Weak.getLocalPosition();
+	else
+		currentRootPosition = Idle.getLocalPosition();*/
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.KeysDown[key] = true;
@@ -407,33 +564,77 @@ void SpecialInputCallbackFunction(int key, int x, int y)
 	{
 	case GLUT_KEY_UP:
 		isWalkFor = true;
+		//Idle.addChild(&WalkForward);
 		currentRootPosition.x -= movementSpeed * deltaTime;
 		break;
 	case GLUT_KEY_DOWN:
+		isWalkBack = true;
 		currentRootPosition.x += movementSpeed * deltaTime;
 		break;
 	case GLUT_KEY_LEFT:
+		isShuffleLeft = true;
 		currentRootPosition.z -= movementSpeed * deltaTime;
 		break;
 	case GLUT_KEY_RIGHT:
+		isShuffleRight = true;
 		currentRootPosition.z += movementSpeed * deltaTime;
 		break;
 	}
 
-	if (!isWalkFor)
-		Idle.setLocalPosition(currentRootPosition);
-	else if (isWalkFor)
+	//if (isWalkFor)
 		WalkForward.setLocalPosition(currentRootPosition);
+	//else if (isWalkForLeft)
+		WalkForLeft.setLocalPosition(currentRootPosition);
+	//else if (isWalkForRight)
+		WalkForRight.setLocalPosition(currentRootPosition);
+	//else if (isWalkBack)
+		WalkBackward.setLocalPosition(currentRootPosition);
+	//else if (isWalkBackLeft)
+		WalkBackLeft.setLocalPosition(currentRootPosition);
+	//else if (isWalkBackRight)
+		WalkBackRight.setLocalPosition(currentRootPosition);
+	//else if (isShuffleLeft)
+		ShuffleLeft.setLocalPosition(currentRootPosition);
+	//else if (isShuffleRight)
+		ShuffleRight.setLocalPosition(currentRootPosition);
+	//else if (isJump)
+		Jump.setLocalPosition(currentRootPosition);
+	//else if (isStrong)
+		Strong.setLocalPosition(currentRootPosition);
+	//else if (isWeak)
+		Weak.setLocalPosition(currentRootPosition);
+	//else
+		Idle.setLocalPosition(currentRootPosition);
 }
 
 void SpecialInputUpCallbackFunction(int key, int x, int y)
 {
 	float movementSpeed = 2.5f; // how fast should the object move
-	glm::vec3 currentRootPosition;
-	if (!isWalkFor)
-		currentRootPosition = Idle.getLocalPosition();
-	else if (isWalkFor)
+	glm::vec3 currentRootPosition;// = PrevAnim.getLocalPosition();
+	if (isWalkFor)
 		currentRootPosition = WalkForward.getLocalPosition();
+	else if (isWalkForLeft)
+		currentRootPosition = WalkForLeft.getLocalPosition();
+	else if (isWalkForRight)
+		currentRootPosition = WalkForRight.getLocalPosition();
+	else if (isWalkBack)
+		currentRootPosition = WalkBackward.getLocalPosition();
+	else if (isWalkBackLeft)
+		currentRootPosition = WalkBackLeft.getLocalPosition();
+	else if (isWalkBackRight)
+		currentRootPosition = WalkBackRight.getLocalPosition();
+	else if (isShuffleLeft)
+		currentRootPosition = ShuffleLeft.getLocalPosition();
+	else if (isShuffleRight)
+		currentRootPosition = ShuffleRight.getLocalPosition();
+	/*else if (isJump)
+		currentRootPosition = Jump.getLocalPosition();
+	else if (isStrong)
+		currentRootPosition = Strong.getLocalPosition();
+	else if (isWeak)
+		currentRootPosition = Weak.getLocalPosition();
+	else
+		currentRootPosition = Idle.getLocalPosition();*/
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.KeysDown[key] = false;
@@ -442,23 +643,51 @@ void SpecialInputUpCallbackFunction(int key, int x, int y)
 	{
 	case GLUT_KEY_UP:
 		isWalkFor = false;
+		PrevAnim = WalkForward;
+		//Idle.removeChild(&WalkForward);
 		currentRootPosition.x -= movementSpeed * deltaTime;
 		break;
 	case GLUT_KEY_DOWN:
+		isWalkBack = false;
+		PrevAnim = WalkBackward;
 		currentRootPosition.x += movementSpeed * deltaTime;
 		break;
 	case GLUT_KEY_LEFT:
-		currentRootPosition.z -= movementSpeed * deltaTime;
+		isShuffleLeft = false;
+		PrevAnim = ShuffleLeft;
+		currentRootPosition.y += movementSpeed * deltaTime;
 		break;
 	case GLUT_KEY_RIGHT:
-		currentRootPosition.z += movementSpeed * deltaTime;
+		isShuffleRight = false;
+		PrevAnim = ShuffleRight;
+		currentRootPosition.y -= movementSpeed * deltaTime;
 		break;
 	}
 
-	if (!isWalkFor)
-		Idle.setLocalPosition(currentRootPosition);
-	else if (isWalkFor)
+	//if (isWalkFor)
 		WalkForward.setLocalPosition(currentRootPosition);
+	//else if (isWalkForLeft)
+		WalkForLeft.setLocalPosition(currentRootPosition);
+	//else if (isWalkForRight)
+		WalkForRight.setLocalPosition(currentRootPosition);
+	//else if (isWalkBack)
+		WalkBackward.setLocalPosition(currentRootPosition);
+	//else if (isWalkBackLeft)
+		 WalkBackLeft.setLocalPosition(currentRootPosition);
+	//else if (isWalkBackRight)
+		WalkBackRight.setLocalPosition(currentRootPosition);
+	//else if (isShuffleLeft)
+		ShuffleLeft.setLocalPosition(currentRootPosition);
+	//else if (isShuffleRight)
+		ShuffleRight.setLocalPosition(currentRootPosition);
+	//else if (isJump)
+		Jump.setLocalPosition(currentRootPosition);
+	//else if (isStrong)
+		Strong.setLocalPosition(currentRootPosition);
+	//else if (isWeak)
+		Weak.setLocalPosition(currentRootPosition);
+	//else
+		Idle.setLocalPosition(currentRootPosition);
 }
 
 // Called when the mouse is clicked and moves
