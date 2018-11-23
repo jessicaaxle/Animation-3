@@ -89,12 +89,6 @@ bool isStrong;
 bool isWeak;
 bool loopPlayed = false;
 
-//Key pressed bools
-bool pressUp = false;
-bool pressDown = false;
-bool pressLeft = false;
-bool pressRight = false;
-
 void InitializeScene()
 {
 	//std::string animationPath = "../../assets/animations/HTR/";
@@ -367,6 +361,25 @@ void drawHierarchyUI()
 */
 void KeyboardCallbackFunction(unsigned char key, int x, int y)
 {
+	float movementSpeed = 2.5f; // how fast should the object move
+	//glm::vec3 currentRootPosition;// = PrevAnim.getLocalPosition();
+	if (isWalkFor)
+		currentRootPosition = WalkForward.getLocalPosition();
+	else if (isWalkForLeft)
+		currentRootPosition = WalkForLeft.getLocalPosition();
+	else if (isWalkForRight)
+		currentRootPosition = WalkForRight.getLocalPosition();
+	else if (isWalkBack)
+		currentRootPosition = WalkBackward.getLocalPosition();
+	else if (isWalkBackLeft)
+		currentRootPosition = WalkBackLeft.getLocalPosition();
+	else if (isWalkBackRight)
+		currentRootPosition = WalkBackRight.getLocalPosition();
+	else if (isShuffleLeft)
+		currentRootPosition = ShuffleLeft.getLocalPosition();
+	else if (isShuffleRight)
+		currentRootPosition = ShuffleRight.getLocalPosition();
+
 	ImGuiIO& io = ImGui::GetIO();
 	io.KeysDown[(int)key] = true;
 	io.AddInputCharacter((int)key); // this is what makes keyboard input work in imgui
@@ -378,27 +391,45 @@ void KeyboardCallbackFunction(unsigned char key, int x, int y)
 		break;
 	case 'q': // the 'q' key
 	case 'Q':
-		input.cameraUp = true;
+		isWalkForLeft = true;
+		currentRootPosition.x -= movementSpeed * deltaTime;
+		currentRootPosition.z += movementSpeed * deltaTime;
 		break;
 	case 'e':
 	case 'E':
-		input.cameraDown = true;
+		isWalkForRight = true;
+		currentRootPosition.x -= movementSpeed * deltaTime;
+		currentRootPosition.z -= movementSpeed * deltaTime;
 		break;
+	case 'z':
+	case'Z':
+		isWalkBackLeft = true;
+		currentRootPosition.x += movementSpeed * deltaTime;
+		currentRootPosition.z += movementSpeed * deltaTime;
+	case 'c':
+	case 'C':
+		isWalkBackRight = true;
+		currentRootPosition.x += movementSpeed * deltaTime;
+		currentRootPosition.z -= movementSpeed * deltaTime;
 	case 'W':
 	case 'w':
-		input.cameraForward = true;
+		isWalkFor = true;
+		currentRootPosition.x -= movementSpeed * deltaTime;
 		break;
 	case 'S':
 	case 's':
-		input.cameraBackward = true;
+		isWalkBack = true;
+		currentRootPosition.x += movementSpeed * deltaTime;
 		break;
 	case 'A':
 	case 'a':
-		input.cameraRight = true;
+		isShuffleLeft = true;
+		currentRootPosition.z += movementSpeed * deltaTime;
 		break;
 	case 'D':
 	case 'd':
-		input.cameraLeft = true;
+		isShuffleRight = true;
+		currentRootPosition.z -= movementSpeed * deltaTime;
 		break;
 	case 32:
 		//WalkForward.initializeSkeletonFromHTR(skinnedGameObject.animFiles[1], "", nullptr);
@@ -407,6 +438,19 @@ void KeyboardCallbackFunction(unsigned char key, int x, int y)
 
 		//skinnedGameObject.loadSkeletonFromHTR(skinnedGameObject.animFiles[1]);
 	}
+
+	WalkForward.setLocalPosition(currentRootPosition);
+	WalkForLeft.setLocalPosition(currentRootPosition);
+	WalkForRight.setLocalPosition(currentRootPosition);
+	WalkBackward.setLocalPosition(currentRootPosition);
+	WalkBackLeft.setLocalPosition(currentRootPosition);
+	WalkBackRight.setLocalPosition(currentRootPosition);
+	ShuffleLeft.setLocalPosition(currentRootPosition);
+	ShuffleRight.setLocalPosition(currentRootPosition);
+	Jump.setLocalPosition(currentRootPosition);
+	Strong.setLocalPosition(currentRootPosition);
+	Weak.setLocalPosition(currentRootPosition);
+	Idle.setLocalPosition(currentRootPosition);
 
 	// This is what makes the backspace button work
 	int keyModifier = glutGetModifiers();
@@ -432,34 +476,74 @@ void KeyboardCallbackFunction(unsigned char key, int x, int y)
 */
 void KeyboardUpCallbackFunction(unsigned char key, int x, int y)
 {
+	float movementSpeed = 2.5f; // how fast should the object move
+	//glm::vec3 currentRootPosition;// = PrevAnim.getLocalPosition();
+	if (isWalkFor)
+		currentRootPosition = WalkForward.getLocalPosition();
+	else if (isWalkForLeft)
+		currentRootPosition = WalkForLeft.getLocalPosition();
+	else if (isWalkForRight)
+		currentRootPosition = WalkForRight.getLocalPosition();
+	else if (isWalkBack)
+		currentRootPosition = WalkBackward.getLocalPosition();
+	else if (isWalkBackLeft)
+		currentRootPosition = WalkBackLeft.getLocalPosition();
+	else if (isWalkBackRight)
+		currentRootPosition = WalkBackRight.getLocalPosition();
+	else if (isShuffleLeft)
+		currentRootPosition = ShuffleLeft.getLocalPosition();
+	else if (isShuffleRight)
+		currentRootPosition = ShuffleRight.getLocalPosition();
+
 	ImGuiIO& io = ImGui::GetIO();
 	io.KeysDown[key] = false;
 
 	switch (key)
 	{
+	case 27: // the escape key
+		glutExit();
+		break;
 	case 'q': // the 'q' key
 	case 'Q':
-		input.cameraUp = false;
+		isWalkForLeft = false;
+		currentRootPosition.x -= movementSpeed * deltaTime;
+		currentRootPosition.z += movementSpeed * deltaTime;
 		break;
 	case 'e':
 	case 'E':
-		input.cameraDown = false;
+		isWalkForRight = false;
+		currentRootPosition.x -= movementSpeed * deltaTime;
+		currentRootPosition.z -= movementSpeed * deltaTime;
 		break;
+	case 'z':
+	case'Z':
+		isWalkBackLeft = false;
+		currentRootPosition.x += movementSpeed * deltaTime;
+		currentRootPosition.z += movementSpeed * deltaTime;
+	case 'c':
+	case 'C':
+		isWalkBackRight = false;
+		currentRootPosition.x += movementSpeed * deltaTime;
+		currentRootPosition.z -= movementSpeed * deltaTime;
 	case 'W':
 	case 'w':
-		input.cameraForward = false;
+		isWalkFor = false;
+		currentRootPosition.x -= movementSpeed * deltaTime;
 		break;
 	case 'S':
 	case 's':
-		input.cameraBackward = false;
+		isWalkBack = false;
+		currentRootPosition.x += movementSpeed * deltaTime;
 		break;
 	case 'A':
 	case 'a':
-		input.cameraRight = false;
+		isShuffleLeft = false;
+		currentRootPosition.z += movementSpeed * deltaTime;
 		break;
 	case 'D':
 	case 'd':
-		input.cameraLeft = false;
+		isShuffleRight = false;
+		currentRootPosition.z -= movementSpeed * deltaTime;
 		break;
 	case 32:
 		isJump = false;
@@ -467,6 +551,19 @@ void KeyboardUpCallbackFunction(unsigned char key, int x, int y)
 	default:
 		break;
 	}
+
+	WalkForward.setLocalPosition(currentRootPosition);
+	WalkForLeft.setLocalPosition(currentRootPosition);
+	WalkForRight.setLocalPosition(currentRootPosition);
+	WalkBackward.setLocalPosition(currentRootPosition);
+	WalkBackLeft.setLocalPosition(currentRootPosition);
+	WalkBackRight.setLocalPosition(currentRootPosition);
+	ShuffleLeft.setLocalPosition(currentRootPosition);
+	ShuffleRight.setLocalPosition(currentRootPosition);
+	Jump.setLocalPosition(currentRootPosition);
+	Strong.setLocalPosition(currentRootPosition);
+	Weak.setLocalPosition(currentRootPosition);
+	Idle.setLocalPosition(currentRootPosition);
 
 	int keyModifier = glutGetModifiers();
 	io.KeyShift = false;
@@ -539,7 +636,7 @@ void MouseClickCallbackFunction(int button, int state, int x, int y)
 
 void SpecialInputCallbackFunction(int key, int x, int y)
 {
-	float movementSpeed = 2.5f; // how fast should the object move
+	/*float movementSpeed = 2.5f; // how fast should the object move
 	//glm::vec3 currentRootPosition;// = PrevAnim.getLocalPosition();
 	if(isWalkFor)
 		currentRootPosition = WalkForward.getLocalPosition();
@@ -572,22 +669,22 @@ void SpecialInputCallbackFunction(int key, int x, int y)
 	switch (key)
 	{
 	case GLUT_KEY_UP:
-		//pressUp = true;
-		isWalkFor = true;
-		//Idle.addChild(&WalkForward);
-		currentRootPosition.x -= movementSpeed * deltaTime;
+		input.cameraForward = true;
 		break;
 	case GLUT_KEY_DOWN:
-		isWalkBack = true;
-		currentRootPosition.x += movementSpeed * deltaTime;
+		input.cameraBackward = true;
 		break;
 	case GLUT_KEY_LEFT:
-		isShuffleLeft = true;
-		currentRootPosition.z += movementSpeed * deltaTime;
+		input.cameraRight = true;
 		break;
 	case GLUT_KEY_RIGHT:
-		isShuffleRight = true;
-		currentRootPosition.z -= movementSpeed * deltaTime;
+		input.cameraLeft = true;
+		break;
+	case GLUT_KEY_PAGE_DOWN:
+		input.cameraDown = true;
+		break;
+	case GLUT_KEY_PAGE_UP:
+		input.cameraUp = true;
 		break;
 	case GLUT_KEY_SHIFT_L:
 		isWeak = true;
@@ -597,7 +694,7 @@ void SpecialInputCallbackFunction(int key, int x, int y)
 		break;
 	}
 
-	if (isWalkFor == true && isShuffleRight == true)
+	/*if (isWalkFor == true && isShuffleRight == true)
 	{
 		isWalkForRight = true;
 		currentRootPosition.x -= movementSpeed * deltaTime;
@@ -620,9 +717,9 @@ void SpecialInputCallbackFunction(int key, int x, int y)
 		isWalkBackLeft = true;
 		currentRootPosition.x += movementSpeed * deltaTime;
 		currentRootPosition.z += movementSpeed * deltaTime;
-	}
+	}*/
 
-	//if (isWalkFor)
+	/*if (isWalkFor)
 		WalkForward.setLocalPosition(currentRootPosition);
 	//else if (isWalkForLeft)
 		WalkForLeft.setLocalPosition(currentRootPosition);
@@ -645,7 +742,7 @@ void SpecialInputCallbackFunction(int key, int x, int y)
 	//else if (isWeak)
 		Weak.setLocalPosition(currentRootPosition);
 	//else
-		Idle.setLocalPosition(currentRootPosition);
+		Idle.setLocalPosition(currentRootPosition);*/
 }
 //glm::vec3 currentRootPosition;
 void SpecialInputUpCallbackFunction(int key, int x, int y)
@@ -683,25 +780,22 @@ void SpecialInputUpCallbackFunction(int key, int x, int y)
 	switch (key)
 	{
 	case GLUT_KEY_UP:
-		isWalkFor = false;
-		PrevAnim = WalkForward;
-		//Idle.removeChild(&WalkForward);
-		currentRootPosition.x -= movementSpeed * deltaTime;
+		input.cameraForward = false;
 		break;
 	case GLUT_KEY_DOWN:
-		isWalkBack = false;
-		PrevAnim = WalkBackward;
-		currentRootPosition.x += movementSpeed * deltaTime;
+		input.cameraBackward = false;
 		break;
 	case GLUT_KEY_LEFT:
-		isShuffleLeft = false;
-		PrevAnim = ShuffleLeft;
-		currentRootPosition.z += movementSpeed * deltaTime;
+		input.cameraRight = false;
 		break;
 	case GLUT_KEY_RIGHT:
-		isShuffleRight = false;
-		PrevAnim = ShuffleRight;
-		currentRootPosition.z -= movementSpeed * deltaTime;
+		input.cameraLeft = false;
+		break;
+	case GLUT_KEY_PAGE_DOWN:
+		input.cameraDown = false;
+		break;
+	case GLUT_KEY_PAGE_UP:
+		input.cameraUp = false;
 		break;
 	case GLUT_KEY_SHIFT_L:
 		isWeak = false;
@@ -711,39 +805,14 @@ void SpecialInputUpCallbackFunction(int key, int x, int y)
 		break;
 	}
 
-	if (isWalkFor == false && isShuffleRight == false)
+	/*if (isWalkFor == false && isShuffleRight == false)
 		isWalkForRight = false;
 	if (isWalkFor == false && isShuffleLeft == false)
 		isWalkForLeft = false;
 	if (isWalkBack == false && isShuffleRight == false)
 		isWalkBackRight = false;
 	if (isWalkBack == false && isShuffleLeft == false)
-		isWalkBackLeft = false;
-
-	//if (isWalkFor)
-		WalkForward.setLocalPosition(currentRootPosition);
-	//else if (isWalkForLeft)
-		WalkForLeft.setLocalPosition(currentRootPosition);
-	//else if (isWalkForRight)
-		WalkForRight.setLocalPosition(currentRootPosition);
-	//else if (isWalkBack)
-		WalkBackward.setLocalPosition(currentRootPosition);
-	//else if (isWalkBackLeft)
-		 WalkBackLeft.setLocalPosition(currentRootPosition);
-	//else if (isWalkBackRight)
-		WalkBackRight.setLocalPosition(currentRootPosition);
-	//else if (isShuffleLeft)
-		ShuffleLeft.setLocalPosition(currentRootPosition);
-	//else if (isShuffleRight)
-		ShuffleRight.setLocalPosition(currentRootPosition);
-	//else if (isJump)
-		Jump.setLocalPosition(currentRootPosition);
-	//else if (isStrong)
-		Strong.setLocalPosition(currentRootPosition);
-	//else if (isWeak)
-		Weak.setLocalPosition(currentRootPosition);
-	//else
-		Idle.setLocalPosition(currentRootPosition);
+		isWalkBackLeft = false;*/
 }
 
 // Called when the mouse is clicked and moves
