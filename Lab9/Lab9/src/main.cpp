@@ -59,6 +59,9 @@ float interpVal = 0.0f;
 //SkinnedGameObject skinnedGameObject;
 std::string animationPath = "../../assets/animations/HTR/";
 
+//Used for moving the player at the right position
+glm::vec3 currentRootPosition;
+
 SkinnedGameObject interpSkeleton;
 SkinnedGameObject PrevAnim;
 SkinnedGameObject Idle;
@@ -85,6 +88,12 @@ bool isJump;
 bool isStrong;
 bool isWeak;
 bool loopPlayed = false;
+
+//Key pressed bools
+bool pressUp = false;
+bool pressDown = false;
+bool pressLeft = false;
+bool pressRight = false;
 
 void InitializeScene()
 {
@@ -176,7 +185,7 @@ void ProcessInput()
 
 void Interpolation()
 {
-	
+
 }
 
 // This is where we draw stuff
@@ -195,7 +204,7 @@ void DisplayCallbackFunction(void)
 	{
 		for (float i = 0.5f; i >= interpVal; i -= 0.1f)
 		{
-			std::cout << i << std::endl;
+			//std::cout << i << std::endl;
 			glm::quat IdleQuat = blend.RotationToQuaternion(Idle.getWorldRotation());
 			glm::quat WalkForQaut = blend.RotationToQuaternion(WalkForward.getWorldRotation());
 			glm::quat SlerpQuat = blend.Slerp(IdleQuat, WalkForQaut, i);
@@ -327,7 +336,7 @@ void drawHierarchyUI()
 		ImGui::Text("Selected Object: %s", selectedObject->name.c_str());
 		ImGui::Text("Local Position: %s", glm::to_string(selectedObject->getLocalPosition()).c_str());
 		ImGui::Text("World Position: %s", glm::to_string(selectedObject->getWorldPosition()).c_str());
-
+		
 		selectedObject->colour = glm::vec4(0, 1, 1, 1);
 		glm::vec3 pos = selectedObject->getLocalPosition();
 		glm::vec3 rot = selectedObject->getLocalRotationAngles();
@@ -519,7 +528,7 @@ void WindowReshapeCallbackFunction(int w, int h)
 // This is called when a mouse button is clicked
 void MouseClickCallbackFunction(int button, int state, int x, int y)
 {
-	ImGui::GetIO().MouseDown[0] = !state;
+	ImGui::GetIO().MouseDown[0] = state;
 
 	mousePosition.x = x;
 	mousePosition.y = y;
@@ -531,7 +540,7 @@ void MouseClickCallbackFunction(int button, int state, int x, int y)
 void SpecialInputCallbackFunction(int key, int x, int y)
 {
 	float movementSpeed = 2.5f; // how fast should the object move
-	glm::vec3 currentRootPosition;// = PrevAnim.getLocalPosition();
+	//glm::vec3 currentRootPosition;// = PrevAnim.getLocalPosition();
 	if(isWalkFor)
 		currentRootPosition = WalkForward.getLocalPosition();
 	else if (isWalkForLeft)
@@ -563,6 +572,7 @@ void SpecialInputCallbackFunction(int key, int x, int y)
 	switch (key)
 	{
 	case GLUT_KEY_UP:
+		//pressUp = true;
 		isWalkFor = true;
 		//Idle.addChild(&WalkForward);
 		currentRootPosition.x -= movementSpeed * deltaTime;
@@ -573,12 +583,43 @@ void SpecialInputCallbackFunction(int key, int x, int y)
 		break;
 	case GLUT_KEY_LEFT:
 		isShuffleLeft = true;
-		currentRootPosition.z -= movementSpeed * deltaTime;
+		currentRootPosition.z += movementSpeed * deltaTime;
 		break;
 	case GLUT_KEY_RIGHT:
 		isShuffleRight = true;
-		currentRootPosition.z += movementSpeed * deltaTime;
+		currentRootPosition.z -= movementSpeed * deltaTime;
 		break;
+	case GLUT_KEY_SHIFT_L:
+		isWeak = true;
+		break;
+	case GLUT_KEY_CTRL_L:
+		isStrong = true;
+		break;
+	}
+
+	if (isWalkFor == true && isShuffleRight == true)
+	{
+		isWalkForRight = true;
+		currentRootPosition.x -= movementSpeed * deltaTime;
+		currentRootPosition.z -= movementSpeed * deltaTime;
+	}
+	if (isWalkFor == true && isShuffleLeft == true)
+	{
+		isWalkForLeft = true;
+		currentRootPosition.x -= movementSpeed * deltaTime;
+		currentRootPosition.z += movementSpeed * deltaTime;
+	}
+	if (isWalkBack == true && isShuffleRight == true)
+	{
+		isWalkBackRight = true;
+		currentRootPosition.x += movementSpeed * deltaTime;
+		currentRootPosition.z -= movementSpeed * deltaTime;
+	}
+	if (isWalkBack == true && isShuffleLeft == true)
+	{
+		isWalkBackLeft = true;
+		currentRootPosition.x += movementSpeed * deltaTime;
+		currentRootPosition.z += movementSpeed * deltaTime;
 	}
 
 	//if (isWalkFor)
@@ -606,11 +647,11 @@ void SpecialInputCallbackFunction(int key, int x, int y)
 	//else
 		Idle.setLocalPosition(currentRootPosition);
 }
-
+//glm::vec3 currentRootPosition;
 void SpecialInputUpCallbackFunction(int key, int x, int y)
 {
 	float movementSpeed = 2.5f; // how fast should the object move
-	glm::vec3 currentRootPosition;// = PrevAnim.getLocalPosition();
+	// = PrevAnim.getLocalPosition();
 	if (isWalkFor)
 		currentRootPosition = WalkForward.getLocalPosition();
 	else if (isWalkForLeft)
@@ -655,14 +696,29 @@ void SpecialInputUpCallbackFunction(int key, int x, int y)
 	case GLUT_KEY_LEFT:
 		isShuffleLeft = false;
 		PrevAnim = ShuffleLeft;
-		currentRootPosition.y += movementSpeed * deltaTime;
+		currentRootPosition.z += movementSpeed * deltaTime;
 		break;
 	case GLUT_KEY_RIGHT:
 		isShuffleRight = false;
 		PrevAnim = ShuffleRight;
-		currentRootPosition.y -= movementSpeed * deltaTime;
+		currentRootPosition.z -= movementSpeed * deltaTime;
+		break;
+	case GLUT_KEY_SHIFT_L:
+		isWeak = false;
+		break;
+	case GLUT_KEY_CTRL_L:
+		isStrong = false;
 		break;
 	}
+
+	if (isWalkFor == false && isShuffleRight == false)
+		isWalkForRight = false;
+	if (isWalkFor == false && isShuffleLeft == false)
+		isWalkForLeft = false;
+	if (isWalkBack == false && isShuffleRight == false)
+		isWalkBackRight = false;
+	if (isWalkBack == false && isShuffleLeft == false)
+		isWalkBackLeft = false;
 
 	//if (isWalkFor)
 		WalkForward.setLocalPosition(currentRootPosition);
@@ -693,6 +749,7 @@ void SpecialInputUpCallbackFunction(int key, int x, int y)
 // Called when the mouse is clicked and moves
 void MouseMotionCallbackFunction(int x, int y)
 {
+
 	if (mousePosition.length() > 0 && !ImGui::GetIO().WantCaptureMouse) // wantCaptureMouse is true if the mouse is within an imgui element
 		camera.processMouseMotion(x, y, mousePosition.x, mousePosition.y, deltaTime);
 
